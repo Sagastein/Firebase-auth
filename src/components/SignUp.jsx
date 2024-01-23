@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { auth } from "../config/firebase-config";
-
+import { BeatLoader } from "react-spinners";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { Link } from "react-router-dom";
 
 export const SignUp = () => {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
-  const [confrimPassword, setConfirmPassword] = useState();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confrimPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const signUp = async () => {
     if (password !== confrimPassword) {
       return alert("password must match");
     }
     try {
+      setLoading(true);
       await createUserWithEmailAndPassword(auth, email, password);
     } catch (error) {
       alert(error.message);
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -78,8 +82,9 @@ export const SignUp = () => {
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               type="button"
               onClick={signUp}
+              disabled={loading}
             >
-              Sign In
+              {loading ? <BeatLoader color="#ffffff" size={8} /> : "Sign Up"}
             </button>
           </div>
           <div className="flex items-center gap-x-2">
