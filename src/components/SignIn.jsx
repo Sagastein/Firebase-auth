@@ -3,14 +3,27 @@ import { useEffect, useState } from "react";
 import { auth } from "../config/firebase-config";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Link } from "react-router-dom";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useUserStore from "../hooks/AuthStore";
 import { BeatLoader } from "react-spinners";
 export const SignIn = () => {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setLoading] = useState(false);
   const { isAuthenticated, loading } = useUserStore();
   const navigate = useNavigate();
+  useEffect(() => {
+    const redirectIfAuthenticated = () => {
+      if (isAuthenticated) {
+        navigate("/");
+      }
+    };
+    redirectIfAuthenticated();
+    const unsubscribe = () => {
+      redirectIfAuthenticated();
+    };
+    return unsubscribe;
+  }, [isAuthenticated, navigate]);
   if (loading)
     return (
       <main className="flex justify-center items-center h-screen">
@@ -21,11 +34,14 @@ export const SignIn = () => {
     e.preventDefault();
 
     try {
+      setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
       alert("user signed in successfuly");
       navigate("/");
     } catch (error) {
       alert(error.message);
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -75,11 +91,12 @@ export const SignIn = () => {
           </div>
           <div className="flex items-center justify-between">
             <button
+              disabled={isLoading}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               type="button"
               onClick={(e) => signIn(e)}
             >
-              Sign In
+              {isLoading ? <BeatLoader color="#ffffff" size={8} /> : "Sign In"}
             </button>
           </div>
           <div className="flex items-center gap-x-2">
@@ -88,7 +105,7 @@ export const SignIn = () => {
               className="text-blue-500 capitalize cursor-pointer hover:text-blue-800"
               to={"/signup"}
             >
-              signUn
+              signUp
             </Link>
           </div>
         </section>
